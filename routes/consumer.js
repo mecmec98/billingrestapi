@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const isProd = process.env.NODE_ENV === 'production';
 //DB configuration
 const { pool } = require('../db.js');
 
@@ -9,7 +10,7 @@ router.get('/', async (req, res) => {
         const result = await pool.query('SELECT * FROM consumers');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -20,7 +21,7 @@ router.get('/:id', async (req, res) => {
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Consumer not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -28,18 +29,18 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     const { fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading } = req.body;
 
-    if (!fullname && typeof fullname !== 'string'
-        && !address && typeof address !== 'string'
-        && !ratetype && typeof ratetype !== 'integer'
-        && !metercode && typeof metercode !== 'number'
-        && !meternumber && typeof meternumber !== 'string'
-        && !clusternumber && typeof clusternumber !== 'string'
-        && !senior && typeof senior !== 'number'
-        && !seniorstart && isNaN(Date.parse(seniorstart))
-        && !seniorexpiry && isNaN(Date.parse(seniorexpiry))
-        && !status && typeof status !== 'number'
-        && !prevreading && typeof prevreading !== 'number'
-        && !curreading && typeof curreading !== 'number') {
+    if (!fullname || typeof fullname !== 'string'
+        || !address || typeof address !== 'string'
+        || !ratetype || typeof ratetype !== 'integer'
+        || !metercode || typeof metercode !== 'number'
+        || !meternumber || typeof meternumber !== 'string'
+        || !clusternumber || typeof clusternumber !== 'string'
+        || !senior || typeof senior !== 'number'
+        || !seniorstart || isNaN(Date.parse(seniorstart))
+        || !seniorexpiry || isNaN(Date.parse(seniorexpiry))
+        || !status || typeof status !== 'number'
+        || !prevreading || typeof prevreading !== 'number'
+        || !curreading || typeof curreading !== 'number') {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
 
@@ -50,7 +51,7 @@ router.post('/', async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -58,18 +59,18 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const { fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading } = req.body;
 
-    if (!fullname && typeof fullname !== 'string'
-        && !address && typeof address !== 'string'
-        && !ratetype && typeof ratetype !== 'integer'
-        && !metercode && typeof metercode !== 'number'
-        && !meternumber && typeof meternumber !== 'string'
-        && !clusternumber && typeof clusternumber !== 'string'
-        && !senior && typeof senior !== 'number'
-        && !seniorstart && isNaN(Date.parse(seniorstart))
-        && !seniorexpiry && isNaN(Date.parse(seniorexpiry))
-        && !status && typeof status !== 'number'
-        && !prevreading && typeof prevreading !== 'number'
-        && !curreading && typeof curreading !== 'number') {
+    if (!fullname || typeof fullname !== 'string'
+        || !address || typeof address !== 'string'
+        || !ratetype || typeof ratetype !== 'integer'
+        || !metercode || typeof metercode !== 'number'
+        || !meternumber || typeof meternumber !== 'string'
+        || !clusternumber || typeof clusternumber !== 'string'
+        || !senior || typeof senior !== 'number'
+        || !seniorstart || isNaN(Date.parse(seniorstart))
+        || !seniorexpiry || isNaN(Date.parse(seniorexpiry))
+        || !status || typeof status !== 'number'
+        || !prevreading || typeof prevreading !== 'number'
+        || !curreading || typeof curreading !== 'number') {
 
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
@@ -82,7 +83,7 @@ router.put('/:id', async (req, res) => {
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Consumer not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -93,7 +94,7 @@ router.delete('/:id', async (req, res) => {
         if (result.rows.length > 0) res.json({ message: 'Consumer deleted successfully' });
         else res.status(404).json({ error: 'Consumer not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 

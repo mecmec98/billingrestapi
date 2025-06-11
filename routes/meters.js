@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const isProd = process.env.NODE_ENV === 'production';
 //DB configuration
 const { pool } = require('../db.js');
 
@@ -9,7 +10,7 @@ router.get('/', async (req, res) => {
         const result = await pool.query('SELECT * FROM meters');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -20,7 +21,7 @@ router.get('/:id', async (req, res) => {
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Meter not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -29,8 +30,7 @@ router.post('/', async (req, res) => {
     const { code, brand } = req.body;
 
     if (!code || typeof code !== 'number'
-     || !brand || typeof brand !== 'string') 
-     {
+        || !brand || typeof brand !== 'string') {
 
         return res.status(400).json({ error: 'Invalid or missing name or value' });
     }
@@ -41,13 +41,19 @@ router.post('/', async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
 // PUT update meter
 router.put('/:id', async (req, res) => {
     const { code, brand } = req.body;
+
+    if (!code || typeof code !== 'number'
+        || !brand || typeof brand !== 'string') {
+
+        return res.status(400).json({ error: 'Invalid or missing name or value' });
+    }
     try {
         const result = await pool.query(
             'UPDATE meters SET code = $1, brand = $2 WHERE id = $3 RETURNING *',
@@ -56,7 +62,7 @@ router.put('/:id', async (req, res) => {
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Meter not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -67,7 +73,7 @@ router.delete('/:id', async (req, res) => {
         if (result.rows.length > 0) res.json({ message: 'Meter deleted successfully' });
         else res.status(404).json({ error: 'Meter not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 

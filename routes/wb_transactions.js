@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const isProd = process.env.NODE_ENV === 'production';
 //DB configuration
 const { pool } = require('../db.js');
 
@@ -9,7 +10,7 @@ router.get('/', async (req, res) => {
         const result = await pool.query('SELECT * FROM wb_transactions');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+       res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -20,7 +21,7 @@ router.get('/consumer/:consumerid', async (req, res) => {
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Transaction not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -43,7 +44,7 @@ router.post('/', async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -65,7 +66,7 @@ router.put('/payment/:id', async (req, res) => {
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Transaction not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -81,7 +82,7 @@ router.put('/:id', async (req, res) => {
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Transaction not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -92,6 +93,6 @@ router.delete('/:id', async (req, res) => {
         if (result.rows.length > 0) res.json({ message: 'Transaction deleted successfully' });
         else res.status(404).json({ error: 'Transaction not found' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+       res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
