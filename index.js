@@ -15,6 +15,9 @@ app.use('/meters', meterRouter);
 const rateRouter = require('./routes/rates.js');
 app.use('/rates', rateRouter);
 
+const wb_transactionRouter = require('./routes/wb_transactions.js');
+app.use('/wb_transactions', wb_transactionRouter);
+
 
 app.listen(port, () => {
   console.log(`REST API listening at http://localhost:${port}`);

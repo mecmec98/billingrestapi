@@ -37,7 +37,7 @@ router.post('/', async (req, res) => {
      || !rate3140 || typeof rate3140 !== 'number'
      || !rate41up || typeof rate41up !== 'number') {
 
-        return res.status(400).json({ error: 'Invalid or missing name or value' });
+        return res.status(400).json({ error: 'Invalid input' });
     }
     try {
         const result = await pool.query(
@@ -75,3 +75,5 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+module.exports = router;
