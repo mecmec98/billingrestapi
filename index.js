@@ -9,6 +9,12 @@ app.use(express.json());
 const userRouter = require('./routes/users.js');
 app.use('/users', userRouter);
 
+const meterRouter = require('./routes/meters.js');
+app.use('/meters', meterRouter);
+
+const rateRouter = require('./routes/rates.js');
+app.use('/rates', rateRouter);
+
 
 app.listen(port, () => {
   console.log(`REST API listening at http://localhost:${port}`);

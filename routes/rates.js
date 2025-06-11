@@ -28,7 +28,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     const { code, type, metersize, minimum, rate1120, rate2130, rate3140, rate41up } = req.body;
 
-    if (!code || typeof code !== 'string'
+    if (!code || typeof code !== 'number'
      || !type || typeof type !== 'string'
      || !metersize || typeof metersize !== 'string'
      || !minimum || typeof minimum !== 'number'
