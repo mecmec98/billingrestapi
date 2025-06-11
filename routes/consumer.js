@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 
     if (!fullname || typeof fullname !== 'string'
         || !address || typeof address !== 'string'
-        || !ratetype || typeof ratetype !== 'integer'
+        || !ratetype || typeof ratetype !== 'number'
         || !metercode || typeof metercode !== 'number'
         || !meternumber || typeof meternumber !== 'string'
         || !clusternumber || typeof clusternumber !== 'string'

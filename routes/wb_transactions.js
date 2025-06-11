@@ -73,10 +73,19 @@ router.put('/payment/:id', async (req, res) => {
 // PUT update wb_transaction
 router.put('/:id', async (req, res) => {
     const { consumerid, prevreading, curreading, value, status, datepaid, or_number} = req.body;
+    if (!consumerid || typeof consumerid !== 'number'
+        || !prevreading || typeof prevreading !== 'number'
+        || !curreading || typeof curreading !== 'number'
+        || !value || typeof value !== 'number'
+        || !status || typeof status !== 'number'
+        || !datepaid || isNaN(Date.parse(datepaid))
+        || !or_number || typeof or_number !== 'string') {
+        return res.status(400).json({ error: 'Invalid or missing fields' });
+    }
 
     try {
         const result = await pool.query(
-            'UPDATE wb_transactions SET consumer_id = $1, meter_id = $2, rate_id = $3, amount = $4, date = $5 WHERE id = $6 RETURNING *',
+            'UPDATE wb_transactions SET consumer_id = $1, prevreading = $2, curreading = $3, value = $4, status = $5, datepaid = $6, or_number = $7 WHERE id = $8 RETURNING *',
             [consumerid, prevreading, curreading, value, status, datepaid, or_number, req.params.id]
         );
         if (result.rows.length > 0) res.json(result.rows[0]);

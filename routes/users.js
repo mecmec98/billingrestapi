@@ -7,13 +7,13 @@ const { pool } = require('../db.js');
 
 // /users/login
 router.post('/login', async (req, res) => {
-  const { name, password } = req.body;
-  if (!name || !password) {
+  const { username, password } = req.body;
+  if (!username || !password) {
     return res.status(400).json({ error: 'Missing username or password' });
   }
   try {
     // Replace with your actual password check logic!
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [name]);
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -23,7 +23,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     // On success, return user info or a JWT token
-    res.json({ success: true, message: 'Login successful', user: { id: user.id, name: user.name } });
+    res.json({ success: true, message: 'Login successful', user: { id: user.id, username: user.username } });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -52,15 +52,15 @@ router.get('/:id', async (req, res) => {
 
 // POST create new user
 router.post('/', async (req, res) => {
-  const { name, password } = req.body;
-  if (!name || typeof name !== 'string' || name.trim() === ''
+  const { username, password } = req.body;
+  if (!username || typeof username !== 'string' || username.trim() === ''
       || !password || typeof password !== 'string' || password.trim() === '') {
     return res.status(400).json({ error: 'Invalid or missing name' });
   }
   try {
     const result = await pool.query(
-      'INSERT INTO users (name, password) VALUES ($1, $2) RETURNING *',
-      [name.trim(), password.trim()]
+      'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *',
+      [username.trim(), password.trim()]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -73,15 +73,18 @@ router.post('/', async (req, res) => {
 
 // PUT update user
 router.put('/:id', async (req, res) => {
-  const { name } = req.body;
+  const { username } = req.body;
   try {
     const result = await pool.query(
-      'UPDATE users SET name = $1 WHERE id = $2 RETURNING *',
-      [name, req.params.id]
+      'UPDATE users SET username = $1 WHERE id = $2 RETURNING *',
+      [username, req.params.id]
     );
     if (result.rows.length > 0) res.json(result.rows[0]);
     else res.status(404).json({ error: 'User not found' });
   } catch (err) {
+     if (err.code === '23505') {
+      return res.status(409).json({ error: 'Username already exists' });
+    }
     res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
   }
 });
