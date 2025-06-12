@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 
 const app = express();
@@ -18,7 +19,10 @@ app.use('/rates', rateRouter);
 const wb_transactionRouter = require('./routes/wb_transactions.js');
 app.use('/wb_transactions', wb_transactionRouter);
 
+const consumerRouter = require('./routes/consumer.js');
+app.use('/consumers', consumerRouter);
+
 
 app.listen(port, () => {
-  console.log(`REST API listening at http://localhost:${port}`);
+  console.log(`REST API listening at http://${process.env.PGHOST}:${port}`);
 });

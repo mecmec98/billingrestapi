@@ -105,3 +105,5 @@ router.delete('/:id', async (req, res) => {
        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
+
+module.exports = router;
