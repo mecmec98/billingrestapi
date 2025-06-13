@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const isProd = process.env.NODE_ENV === 'production';
+
+//JWT Token configuration
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET  || 'defaultsecretkey';
+
 //DB configuration
 const { pool } = require('../db.js');
 
@@ -12,7 +17,6 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'Missing username or password' });
   }
   try {
-    // Replace with your actual password check logic!
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -22,10 +26,15 @@ router.post('/login', async (req, res) => {
     if (user.password !== password) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    // On success, return user info or a JWT token
-    res.json({ success: true, message: 'Login successful', user: { id: user.id, username: user.username } });
+    // On success, return user info and a JWT token
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: '12h' } // Token expires in 12 hour
+    );
+    return res.json({ success: true, message: 'Login successful', user: { id: user.id, username: user.username }, token });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
