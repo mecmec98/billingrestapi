@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET  || 'defaultsecretkey';
 // Middleware to check if the request is authenticated
 const authenticateToken = require('../middleware/auth.js');
 //dummy authentication middleware use for testing purposes
-// const authenticateToken = (req, res, next) => {
+//const authenticateToken = (req, res, next) => next();
 
 //bcrypt configuration for password hashing
 const bcrypt = require('bcrypt');
@@ -90,8 +90,8 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT update user
-router.put('/:id', authenticateToken, async (req, res) => {
+// PUT update username
+router.put('/username/:id', authenticateToken, async (req, res) => {
   const { username } = req.body;
   try {
     const result = await pool.query(
@@ -104,6 +104,25 @@ router.put('/:id', authenticateToken, async (req, res) => {
      if (err.code === '23505') {
       return res.status(409).json({ error: 'Username already exists' });
     }
+    res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+  }
+});
+
+// PUT update password
+router.put('/password/:id', authenticateToken, async (req, res) => {
+  const { password } = req.body;
+  if (!password || typeof password !== 'string' || password.trim() === '') {
+    return res.status(400).json({ error: 'Invalid or missing password' });
+  }
+  try {
+    const hashedPassword = await bcrypt.hash(password.trim(), SALT_ROUNDS);
+    const result = await pool.query(
+      'UPDATE users SET password = $1 WHERE id = $2 RETURNING *',
+      [hashedPassword, req.params.id]
+    );
+    if (result.rows.length > 0) res.json(result.rows[0]);
+    else res.status(404).json({ error: 'User not found' });
+  } catch (err) {
     res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
   }
 });
