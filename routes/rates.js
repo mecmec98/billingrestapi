@@ -88,7 +88,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('DELETE FROM rates WHERE id = $1 RETURNING *', [req.params.id]);
-        if (result.rows.length > 0) res.json({ message: 'Rate deleted successfully' });
+        if (result.rows.length > 0) res.json({success:true, message: 'Rate deleted successfully' });
         else res.status(404).json({ error: 'Rate not found' });
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });

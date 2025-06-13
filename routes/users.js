@@ -134,8 +134,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       'DELETE FROM users WHERE id = $1 RETURNING *',
       [req.params.id]
     );
-    if (result.rows.length > 0) res.json(result.rows[0]);
-    else res.status(404).json({ error: 'User not found' });
+    if (result.rows.length > 0) {
+      res.json({ success: true, message: 'User deleted successfully', user: result.rows[0] });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
   } catch (err) {
     res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
   }

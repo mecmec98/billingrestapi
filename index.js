@@ -1,3 +1,5 @@
+//nodemon index.js to start with live reload
+
 require('dotenv').config();
 const express = require('express');
 
