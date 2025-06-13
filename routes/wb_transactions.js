@@ -4,8 +4,13 @@ const isProd = process.env.NODE_ENV === 'production';
 //DB configuration
 const { pool } = require('../db.js');
 
+// Middleware to check if the request is authenticated
+const authenticateToken = require('../middleware/auth.js');
+//dummy authentication middleware use for testing purposes
+// const authenticateToken = (req, res, next) => {
+
 // GET all wb_transactions
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM wb_transactions');
         res.json(result.rows);
@@ -15,7 +20,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET wb_transaction by consumerid
-router.get('/consumer/:consumerid', async (req, res) => {
+router.get('/consumer/:consumerid', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM wb_transactions WHERE consumerid = $1', [req.params.consumerid]);
         if (result.rows.length > 0) res.json(result.rows[0]);
@@ -26,7 +31,7 @@ router.get('/consumer/:consumerid', async (req, res) => {
 });
 
 // POST create new wb_transaction
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     const {consumerid, prevreading, curreading, value} = req.body;
 
     if (!consumerid || typeof consumerid !== 'number'
@@ -49,7 +54,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT update wb_transaction on successful payment
-router.put('/payment/:id', async (req, res) => {
+router.put('/payment/:id', authenticateToken, async (req, res) => {
     const {status,datepaid,or_number} = req.body;
 
     if (!status || typeof status !== 'number'
@@ -71,7 +76,7 @@ router.put('/payment/:id', async (req, res) => {
 });
 
 // PUT update wb_transaction
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     const { consumerid, prevreading, curreading, value, status, datepaid, or_number} = req.body;
     if (!consumerid || typeof consumerid !== 'number'
         || !prevreading || typeof prevreading !== 'number'
@@ -96,7 +101,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE wb_transaction
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('DELETE FROM wb_transactions WHERE id = $1 RETURNING *', [req.params.id]);
         if (result.rows.length > 0) res.json({ message: 'Transaction deleted successfully' });

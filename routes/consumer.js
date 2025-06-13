@@ -4,8 +4,11 @@ const isProd = process.env.NODE_ENV === 'production';
 //DB configuration
 const { pool } = require('../db.js');
 
+// Middleware to check if the request is authenticated
+const authenticateToken = require('../middleware/auth.js');
+
 // Get all consumers
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM consumer');
         res.json(result.rows);
@@ -15,7 +18,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get consumer by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM consumer WHERE id = $1', [req.params.id]);
         if (result.rows.length > 0) res.json(result.rows[0]);
@@ -26,7 +29,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new consumer
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     const { fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading } = req.body;
 
     if (!fullname || typeof fullname !== 'string'
@@ -56,7 +59,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update consumer
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     const { fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading } = req.body;
 
     if (!fullname || typeof fullname !== 'string'
@@ -88,7 +91,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete consumer
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('DELETE FROM consumer WHERE id = $1 RETURNING *', [req.params.id]);
         if (result.rows.length > 0) res.json({ message: 'Consumer deleted successfully' });

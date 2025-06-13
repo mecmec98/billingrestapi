@@ -4,8 +4,14 @@ const isProd = process.env.NODE_ENV === 'production';
 //DB configuration
 const { pool } = require('../db.js');
 
+// Middleware to check if the request is authenticated
+const authenticateToken = require('../middleware/auth.js');
+//dummy authentication middleware use for testing purposes
+// const authenticateToken = (req, res, next) => {
+
+
 // GET all rates
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM rates');
         res.json(result.rows);
@@ -15,7 +21,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET rate by id
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM rates WHERE id = $1', [req.params.id]);
         if (result.rows.length > 0) res.json(result.rows[0]);
@@ -26,7 +32,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST create new rate
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     const { code, type, metersize, minimum, rate1120, rate2130, rate3140, rate41up } = req.body;
 
     if (!code || typeof code !== 'number'
@@ -52,7 +58,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT update rate
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     const { code, type, metersize, minimum, rate1120, rate2130, rate3140, rate41up } = req.body;
 
     if (!code || typeof code !== 'number'
@@ -79,7 +85,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE rate
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('DELETE FROM rates WHERE id = $1 RETURNING *', [req.params.id]);
         if (result.rows.length > 0) res.json({ message: 'Rate deleted successfully' });

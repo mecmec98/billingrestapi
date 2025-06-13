@@ -6,6 +6,15 @@ const isProd = process.env.NODE_ENV === 'production';
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET  || 'defaultsecretkey';
 
+// Middleware to check if the request is authenticated
+const authenticateToken = require('../middleware/auth.js');
+//dummy authentication middleware use for testing purposes
+// const authenticateToken = (req, res, next) => {
+
+//bcrypt configuration for password hashing
+const bcrypt = require('bcrypt');
+const SALT_ROUNDS = 10;
+
 //DB configuration
 const { pool } = require('../db.js');
 
@@ -22,8 +31,8 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     const user = result.rows[0];
-    // Example: compare plaintext (not secure, use bcrypt in production!)
-    if (user.password !== password) {
+     const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     // On success, return user info and a JWT token
@@ -39,7 +48,7 @@ router.post('/login', async (req, res) => {
 });
 
 // GET all users
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM users');
     res.json(result.rows);
@@ -49,7 +58,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET user by id
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
     if (result.rows.length > 0) res.json(result.rows[0]);
@@ -60,16 +69,17 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST create new user
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   const { username, password } = req.body;
   if (!username || typeof username !== 'string' || username.trim() === ''
       || !password || typeof password !== 'string' || password.trim() === '') {
     return res.status(400).json({ error: 'Invalid or missing name' });
   }
   try {
+    const hashedPassword = await bcrypt.hash(password.trim(), SALT_ROUNDS);
     const result = await pool.query(
       'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *',
-      [username.trim(), password.trim()]
+      [username.trim(), hashedPassword]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -81,7 +91,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT update user
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
   const { username } = req.body;
   try {
     const result = await pool.query(
@@ -99,7 +109,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE user
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
       'DELETE FROM users WHERE id = $1 RETURNING *',
