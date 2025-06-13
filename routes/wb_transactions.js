@@ -15,7 +15,7 @@ router.get('/', authenticateToken, async (req, res) => {
         const result = await pool.query('SELECT * FROM wb_transactions');
         res.json(result.rows);
     } catch (err) {
-       res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -32,20 +32,23 @@ router.get('/consumer/:consumerid', authenticateToken, async (req, res) => {
 
 // POST create new wb_transaction
 router.post('/', authenticateToken, async (req, res) => {
-    const {consumerid, prevreading, curreading, value} = req.body;
+    const { consumerid, prevreading, curreading, value, status, dateposted, datedue } = req.body;
 
     if (!consumerid || typeof consumerid !== 'number'
         || !prevreading || typeof prevreading !== 'number'
         || !curreading || typeof curreading !== 'number'
-        || !value || typeof value !== 'number') {
+        || !value || typeof value !== 'number'
+        || !status || typeof status !== 'number'
+        || !dateposted || isNaN(Date.parse(dateposted))
+        || !datedue || isNaN(Date.parse(datedue))) {
 
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
 
     try {
         const result = await pool.query(
-            'INSERT INTO wb_transactions (consumer_id, meter_id, rate_id, amount) VALUES ($1, $2, $3, $4) RETURNING *',
-            [consumerid, prevreading, curreading, value]
+            'INSERT INTO wb_transactions (consumer_id, prevreading, curreading, value, status, dateposted, datedue) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [consumerid, prevreading, curreading, value, status, dateposted, datedue]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -55,7 +58,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
 // PUT update wb_transaction on successful payment
 router.put('/payment/:id', authenticateToken, async (req, res) => {
-    const {status,datepaid,or_number} = req.body;
+    const { status, datepaid, or_number } = req.body;
 
     if (!status || typeof status !== 'number'
         || !datepaid || isNaN(Date.parse(datepaid))
@@ -77,14 +80,16 @@ router.put('/payment/:id', authenticateToken, async (req, res) => {
 
 // PUT update wb_transaction
 router.put('/:id', authenticateToken, async (req, res) => {
-    const { consumerid, prevreading, curreading, value, status, datepaid, or_number} = req.body;
+    const { consumerid, prevreading, curreading, value, status, datepaid, or_number, dateposted, datedue } = req.body;
     if (!consumerid || typeof consumerid !== 'number'
         || !prevreading || typeof prevreading !== 'number'
         || !curreading || typeof curreading !== 'number'
         || !value || typeof value !== 'number'
         || !status || typeof status !== 'number'
         || !datepaid || isNaN(Date.parse(datepaid))
-        || !or_number || typeof or_number !== 'string') {
+        || !or_number || typeof or_number !== 'string'
+        || !dateposted || isNaN(Date.parse(dateposted))
+        || !datedue || isNaN(Date.parse(datedue))) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
 
@@ -104,10 +109,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('DELETE FROM wb_transactions WHERE id = $1 RETURNING *', [req.params.id]);
-        if (result.rows.length > 0) res.json({success:true, message: 'Transaction deleted successfully' });
+        if (result.rows.length > 0) res.json({ success: true, message: 'Transaction deleted successfully' });
         else res.status(404).json({ error: 'Transaction not found' });
     } catch (err) {
-       res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
