@@ -15,7 +15,7 @@ router.get('/', authenticateToken, async (req, res) => {
         const result = await pool.query('SELECT * FROM consumer');
         res.json(result.rows);
     } catch (err) {
-         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -45,8 +45,7 @@ router.post('/', authenticateToken, async (req, res) => {
         //|| !seniorexpiry || isNaN(Date.parse(seniorexpiry))
         || !status || typeof status !== 'number'
         || !prevreading === undefined || typeof prevreading !== 'number'
-        || !curreading === undefined || typeof curreading !== 'number')
-         {
+        || !curreading === undefined || typeof curreading !== 'number') {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
 
@@ -63,7 +62,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
 // Update consumer
 router.put('/:id', authenticateToken, async (req, res) => {
-    const { fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading } = req.body;
+    const { fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading, date_connected, date_disconnected, account_number, zone, book, metersize, account_suffix } = req.body;
 
     if (!fullname || typeof fullname !== 'string'
         || !address || typeof address !== 'string'
@@ -71,35 +70,35 @@ router.put('/:id', authenticateToken, async (req, res) => {
         || !metercode || typeof metercode !== 'number'
         || !meternumber || typeof meternumber !== 'string'
         || !clusternumber || typeof clusternumber !== 'string'
-        || !senior === undefined  || typeof senior !== 'number'
+        || !senior === undefined || typeof senior !== 'number'
         //|| !seniorstart || isNaN(Date.parse(seniorstart))
         //|| !seniorexpiry || isNaN(Date.parse(seniorexpiry))
-        || !status  === undefined || typeof status !== 'number'
-        || !prevreading === undefined  || typeof prevreading !== 'number'
-        || !curreading === undefined  || typeof curreading !== 'number') 
+        || !status === undefined || typeof status !== 'number'
+        || !prevreading === undefined || typeof prevreading !== 'number'
+        || !curreading === undefined || typeof curreading !== 'number')
 
 
 
-        //add date connected
-        //add date disconnected
-      
-
-        //add new account_number
-        //account number components brgy code cluster number - metersize meterclass - cluster suffix
-        //add brgycode
-        //add metersize
-        //add cluster_suffix
-        //add single meter code = unique identifier
+    //add date connected
+    //add date disconnected
 
 
-        //add old acc_number generation
-        //account number components brgy code 2zone 1book - metersize meterclass - account suffix
-        //add brgycode
-        //add zone
-        //add book
-        //add metersize
-        //add account suffix
-        {
+    //add new account_number
+    //account number components brgy code cluster number - metersize meterclass - cluster suffix
+    //add brgycode
+    //add metersize
+    //add cluster_suffix
+    //add single meter code = unique identifier
+
+
+    //add old acc_number generation
+    //account number components brgy code 2zone 1book - metersize meterclass - account suffix
+    //add brgycode
+    //add zone
+    //add book
+    //add metersize
+    //add account suffix
+    {
 
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
@@ -112,7 +111,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Consumer not found' });
     } catch (err) {
-         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
@@ -120,7 +119,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('DELETE FROM consumer WHERE id = $1 RETURNING *', [req.params.id]);
-        if (result.rows.length > 0) res.json({success:true, message: 'Consumer deleted successfully' });
+        if (result.rows.length > 0) res.json({ success: true, message: 'Consumer deleted successfully' });
         else res.status(404).json({ error: 'Consumer not found' });
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
