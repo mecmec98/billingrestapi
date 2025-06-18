@@ -40,18 +40,19 @@ router.post('/', authenticateToken, async (req, res) => {
         || !metercode || typeof metercode !== 'number'
         || !meternumber || typeof meternumber !== 'string'
         || !clusternumber || typeof clusternumber !== 'string'
-        || !senior || typeof senior !== 'number'
-        || !seniorstart || isNaN(Date.parse(seniorstart))
-        || !seniorexpiry || isNaN(Date.parse(seniorexpiry))
+        || !senior === undefined || typeof senior !== 'number'
+        //|| !seniorstart || isNaN(Date.parse(seniorstart))
+        //|| !seniorexpiry || isNaN(Date.parse(seniorexpiry))
         || !status || typeof status !== 'number'
-        || !prevreading || typeof prevreading !== 'number'
-        || !curreading || typeof curreading !== 'number') {
+        || !prevreading === undefined || typeof prevreading !== 'number'
+        || !curreading === undefined || typeof curreading !== 'number')
+         {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
 
     try {
         const result = await pool.query(
-            'INSERT INTO consumer (name, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
+            'INSERT INTO consumer (fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
             [fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading]
         );
         res.status(201).json(result.rows[0]);
@@ -66,23 +67,23 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     if (!fullname || typeof fullname !== 'string'
         || !address || typeof address !== 'string'
-        || !ratetype || typeof ratetype !== 'integer'
+        || !ratetype || typeof ratetype !== 'number'
         || !metercode || typeof metercode !== 'number'
         || !meternumber || typeof meternumber !== 'string'
         || !clusternumber || typeof clusternumber !== 'string'
-        || !senior || typeof senior !== 'number'
-        || !seniorstart || isNaN(Date.parse(seniorstart))
-        || !seniorexpiry || isNaN(Date.parse(seniorexpiry))
-        || !status || typeof status !== 'number'
-        || !prevreading || typeof prevreading !== 'number'
-        || !curreading || typeof curreading !== 'number') {
+        || !senior === undefined  || typeof senior !== 'number'
+        //|| !seniorstart || isNaN(Date.parse(seniorstart))
+        //|| !seniorexpiry || isNaN(Date.parse(seniorexpiry))
+        || !status  === undefined || typeof status !== 'number'
+        || !prevreading === undefined  || typeof prevreading !== 'number'
+        || !curreading === undefined  || typeof curreading !== 'number') {
 
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
 
     try {
         const result = await pool.query(
-            'UPDATE consumer SET name = $1, address = $2, ratetype = $3, metercode = $4, meternumber = $5, clusternumber = $6, senior = $7, seniorstart = $8, seniorexpiry = $9, status = $10, prevreading = $11, curreading = $12 WHERE id = $13 RETURNING *',
+            'UPDATE consumer SET fullname = $1, address = $2, ratetype = $3, metercode = $4, meternumber = $5, clusternumber = $6, senior = $7, seniorstart = $8, seniorexpiry = $9, status = $10, prevreading = $11, curreading = $12 WHERE id = $13 RETURNING *',
             [fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading, req.params.id]
         );
         if (result.rows.length > 0) res.json(result.rows[0]);
