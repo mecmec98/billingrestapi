@@ -76,7 +76,30 @@ router.put('/:id', authenticateToken, async (req, res) => {
         //|| !seniorexpiry || isNaN(Date.parse(seniorexpiry))
         || !status  === undefined || typeof status !== 'number'
         || !prevreading === undefined  || typeof prevreading !== 'number'
-        || !curreading === undefined  || typeof curreading !== 'number') {
+        || !curreading === undefined  || typeof curreading !== 'number') 
+
+
+
+        //add date connected
+        //add date disconnected
+      
+
+        //add new account_number
+        //account number components brgy code cluster number - metersize meterclass - cluster suffix
+        //add brgycode
+        //add metersize
+        //add cluster_suffix
+        //add single meter code = unique identifier
+
+
+        //add old acc_number generation
+        //account number components brgy code 2zone 1book - metersize meterclass - account suffix
+        //add brgycode
+        //add zone
+        //add book
+        //add metersize
+        //add account suffix
+        {
 
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
