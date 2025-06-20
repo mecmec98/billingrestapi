@@ -27,6 +27,9 @@ app.use('/consumers', consumerRouter);
 const sv_transactionRouter = require('./routes/sv_transactions.js');
 app.use('/sv_transactions', sv_transactionRouter);
 
+const barangay = require('./routes/barangay.js');
+app.use('/barangay', barangay);
+
 
 app.listen(port, () => {
   console.log(`REST API listening at http://${process.env.PGHOST}:${port}`);
