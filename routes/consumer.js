@@ -32,7 +32,25 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 // Create new consumer
 router.post('/', authenticateToken, async (req, res) => {
-    const { fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading } = req.body;
+    const {fullname,
+        address,
+        ratetype,
+        metercode = 0,
+        meternumber,
+        clusternumber,
+        senior = 0,
+        seniorstart = '2000-01-01', 
+        seniorexpiry = '2000-01-01', 
+        status, 
+        prevreading, 
+        curreading, 
+        date_connected, 
+        date_disconnected, 
+        account_number, 
+        zone = '', 
+        book = '', 
+        metersize = '', 
+        account_suffix = '' } = req.body;
 
     if (!fullname || typeof fullname !== 'string'
         || !address || typeof address !== 'string'
@@ -41,11 +59,18 @@ router.post('/', authenticateToken, async (req, res) => {
         || !meternumber || typeof meternumber !== 'string'
         || !clusternumber || typeof clusternumber !== 'string'
         || !senior === undefined || typeof senior !== 'number'
-        //|| !seniorstart || isNaN(Date.parse(seniorstart))
-        //|| !seniorexpiry || isNaN(Date.parse(seniorexpiry))
-        || !status || typeof status !== 'number'
+        || !seniorstart || isNaN(Date.parse(seniorstart))
+        || !seniorexpiry || isNaN(Date.parse(seniorexpiry))
+        || !status === undefined || typeof status !== 'number'
         || !prevreading === undefined || typeof prevreading !== 'number'
-        || !curreading === undefined || typeof curreading !== 'number') {
+        || !curreading === undefined || typeof curreading !== 'number'
+        || !date_connected === undefined || isNaN(Date.parse(date_connected))
+        || !date_disconnected === undefined || isNaN(Date.parse(date_disconnected))
+        || !account_number || typeof account_number !== 'string'
+        || !zone || typeof zone !== 'string'
+        || !book || typeof book !== 'string'
+        || !metersize || typeof metersize !== 'string'
+        || !account_suffix || typeof account_suffix !== 'string') {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
 
@@ -62,7 +87,25 @@ router.post('/', authenticateToken, async (req, res) => {
 
 // Update consumer
 router.put('/:id', authenticateToken, async (req, res) => {
-    const { fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading, date_connected, date_disconnected, account_number, zone, book, metersize, account_suffix } = req.body;
+    const {fullname,
+        address,
+        ratetype,
+        metercode = 0,
+        meternumber,
+        clusternumber,
+        senior = 0,
+        seniorstart = '2000-01-01', 
+        seniorexpiry = '2000-01-01', 
+        status, 
+        prevreading, 
+        curreading, 
+        date_connected, 
+        date_disconnected, 
+        account_number, 
+        zone = '', 
+        book = '', 
+        metersize = '', 
+        account_suffix = ''} = req.body;
 
     if (!fullname || typeof fullname !== 'string'
         || !address || typeof address !== 'string'
@@ -71,33 +114,24 @@ router.put('/:id', authenticateToken, async (req, res) => {
         || !meternumber || typeof meternumber !== 'string'
         || !clusternumber || typeof clusternumber !== 'string'
         || !senior === undefined || typeof senior !== 'number'
-        //|| !seniorstart || isNaN(Date.parse(seniorstart))
-        //|| !seniorexpiry || isNaN(Date.parse(seniorexpiry))
+        || !seniorstart || isNaN(Date.parse(seniorstart))
+        || !seniorexpiry || isNaN(Date.parse(seniorexpiry))
         || !status === undefined || typeof status !== 'number'
         || !prevreading === undefined || typeof prevreading !== 'number'
-        || !curreading === undefined || typeof curreading !== 'number')
-
-
-
-    //add date connected
-    //add date disconnected
-
-
+        || !curreading === undefined || typeof curreading !== 'number'
+        || !date_connected || isNaN(Date.parse(date_connected))
+        || !date_disconnected || isNaN(Date.parse(date_disconnected))
+        || !account_number || typeof account_number !== 'string'
+        || !zone || typeof zone !== 'string'
+        || !book || typeof book !== 'string'
+        || !metersize || typeof metersize !== 'string'
+        || !account_suffix || typeof account_suffix !== 'string')
     //add new account_number
     //account number components brgy code cluster number - metersize meterclass - cluster suffix
     //add brgycode
     //add metersize
     //add cluster_suffix
     //add single meter code = unique identifier
-
-
-    //add old acc_number generation
-    //account number components brgy code 2zone 1book - metersize meterclass - account suffix
-    //add brgycode
-    //add zone
-    //add book
-    //add metersize
-    //add account suffix
     {
 
         return res.status(400).json({ error: 'Invalid or missing fields' });
@@ -113,6 +147,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
+
 });
 
 // Delete consumer
@@ -127,4 +162,4 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // Export the router
-module.exports = router;
+module.exports = router; 
