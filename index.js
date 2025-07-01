@@ -31,6 +31,10 @@ const barangay = require('./routes/barangay.js');
 app.use('/barangay', barangay);
 
 
+const migrate = require('./migrationscript/fbtops.js');
+app.use('/testmigrate', migrate);
+
+
 app.listen(port, () => {
   console.log(`REST API listening at http://${process.env.PGHOST}:${port}`);
 });

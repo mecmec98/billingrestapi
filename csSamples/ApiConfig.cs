@@ -25,7 +25,7 @@ public abstract class ApiConfig : IDisposable
         
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json"));
+            new MediaTypeWithQualityHeaderValue("application/json")); 
     }
 
     protected void SetAuthorizationHeader(string token)

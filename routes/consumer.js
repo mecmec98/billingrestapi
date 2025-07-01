@@ -122,7 +122,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         || !date_connected || isNaN(Date.parse(date_connected))
         || !date_disconnected || isNaN(Date.parse(date_disconnected))
         || !account_number || typeof account_number !== 'string'
-        || !zone || typeof zone !== 'string'
+        || !zone || typeof zone !== 'string' 
         || !book || typeof book !== 'string'
         || !metersize || typeof metersize !== 'string'
         || !account_suffix || typeof account_suffix !== 'string')
