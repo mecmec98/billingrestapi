@@ -139,3 +139,4 @@ dist
 migrationscript/
 migrationscript/*.js
 migrationscript/*.txt
+sqdb.js
