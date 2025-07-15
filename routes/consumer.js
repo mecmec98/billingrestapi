@@ -76,8 +76,8 @@ router.post('/', authenticateToken, async (req, res) => {
 
     try {
         const result = await pool.query(
-            'INSERT INTO consumer (fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
-            [fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading]
+            'INSERT INTO consumer (fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading, date_connected, date_disconnected, account_number, zone, book, metersize, account_suffix) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *',
+            [fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading, date_connected, date_disconnected, account_number, zone, book, metersize, account_suffix]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -138,9 +138,31 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 
     try {
+        /**
+         Update list
+         fullname,
+        address,
+        ratetype,
+        metercode = 0,
+        meternumber,
+        clusternumber,
+        senior = 0,
+        seniorstart = '2000-01-01', 
+        seniorexpiry = '2000-01-01', 
+        status, 
+        prevreading, 
+        curreading, 
+        date_connected, 
+        date_disconnected, 
+        account_number, 
+        zone = '', 
+        book = '', 
+        metersize = '', 
+        account_suffix = ''
+         */
         const result = await pool.query(
-            'UPDATE consumer SET fullname = $1, address = $2, ratetype = $3, metercode = $4, meternumber = $5, clusternumber = $6, senior = $7, seniorstart = $8, seniorexpiry = $9, status = $10, prevreading = $11, curreading = $12 WHERE id = $13 RETURNING *',
-            [fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading, req.params.id]
+        'UPDATE consumer SET fullname = $1, address = $2, ratetype = $3, metercode = $4, meternumber = $5, clusternumber = $6, senior = $7, seniorstart = $8, seniorexpiry = $9, status = $10, prevreading = $11, curreading = $12, date_connected = $13, date_disconnected = $14, account_number = $15, zone = $16, book = $17, metersize = $18, account_suffix = $19 WHERE id = $20 RETURNING *',
+        [fullname, address, ratetype, metercode, meternumber, clusternumber, senior, seniorstart, seniorexpiry, status, prevreading, curreading, date_connected, date_disconnected, account_number, zone, book, metersize, account_suffix, req.params.id]
         );
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Consumer not found' });
