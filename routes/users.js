@@ -127,6 +127,21 @@ router.put('/password/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT update user_type
+router.put('/user_type/:id', authenticateToken, async (req, res) => {
+  const { user_type } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE users SET user_type = $1 WHERE id = $2 RETURNING *',
+      [user_type, req.params.id]
+    );
+    if (result.rows.length > 0) res.json(result.rows[0]);
+    else res.status(404).json({ error: 'User not found' });
+  } catch (err) {
+    res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+  }
+});
+
 // DELETE user
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
