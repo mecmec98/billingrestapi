@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { pool } = require('./db.js');
+const { pool } = require('../db.js');
 
 async function seedConsumers() {
   const consumers = [];
