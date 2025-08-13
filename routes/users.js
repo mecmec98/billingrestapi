@@ -4,7 +4,7 @@ const isProd = process.env.NODE_ENV === 'production';
 
 //JWT Token configuration
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET  || 'defaultsecretkey';
+const JWT_SECRET = process.env.JWT_SECRET || 'defaultsecretkey';
 
 // Middleware to check if the request is authenticated
 const authenticateToken = require('../middleware/auth.js');
@@ -31,7 +31,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     const user = result.rows[0];
-     const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -70,16 +70,18 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 // POST create new user
 router.post('/', authenticateToken, async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, role, fullname } = req.body;
   if (!username || typeof username !== 'string' || username.trim() === ''
-      || !password || typeof password !== 'string' || password.trim() === '') {
+    || !password || typeof password !== 'string' || password.trim() === ''
+    || !role || typeof role !== 'number'
+    || !fullname || typeof fullname !== 'string') {
     return res.status(400).json({ error: 'Invalid or missing name' });
   }
   try {
     const hashedPassword = await bcrypt.hash(password.trim(), SALT_ROUNDS);
     const result = await pool.query(
-      'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *',
-      [username.trim(), hashedPassword]
+      'INSERT INTO users (username,password,role,fullname) VALUES ($1,$2,$3,$4) RETURNING *',
+      [username.trim(), hashedPassword, role, fullname]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -101,7 +103,7 @@ router.put('/username/:id', authenticateToken, async (req, res) => {
     if (result.rows.length > 0) res.json(result.rows[0]);
     else res.status(404).json({ error: 'User not found' });
   } catch (err) {
-     if (err.code === '23505') {
+    if (err.code === '23505') {
       return res.status(409).json({ error: 'Username already exists' });
     }
     res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
@@ -128,12 +130,30 @@ router.put('/password/:id', authenticateToken, async (req, res) => {
 });
 
 // PUT update user_type
-router.put('/user_type/:id', authenticateToken, async (req, res) => {
-  const { user_type } = req.body;
+router.put('/role/:id', authenticateToken, async (req, res) => {
+  const { role } = req.body;
   try {
     const result = await pool.query(
-      'UPDATE users SET user_type = $1 WHERE id = $2 RETURNING *',
-      [user_type, req.params.id]
+      'UPDATE users SET role = $1 WHERE id = $2 RETURNING *',
+      [role, req.params.id]
+    );
+    if (result.rows.length > 0) res.json(result.rows[0]);
+    else res.status(404).json({ error: 'User not found' });
+  } catch (err) {
+    res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+  }
+});
+
+// PUT update fullname
+router.put('/fullname/:id', authenticateToken, async (req, res) => {
+  const { fullname } = req.body;
+  if (!fullname || typeof fullname !== 'string' || fullname.trim() === '') {
+    return res.status(400).json({ error: 'Invalid or missing fullname' });
+  }
+  try {
+    const result = await pool.query(
+      'UPDATE users SET fullname = $1 WHERE id = $2 RETURNING *',
+      [fullname.trim(), req.params.id]
     );
     if (result.rows.length > 0) res.json(result.rows[0]);
     else res.status(404).json({ error: 'User not found' });

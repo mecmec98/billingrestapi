@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "migrate:consumers": "node migrationscript/migrate_consumers.js"
+    "start": "node index.js",
+    "start:dev" : "nodemon index.js",
+    "migrate:consumers": "node migrationscript/migrate_consumers.js",
+    "seeder:rates": "node seeders/seed_rates.js"
   },
   "keywords": [],
   "author": "",
