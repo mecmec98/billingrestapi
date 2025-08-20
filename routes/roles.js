@@ -15,7 +15,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Get role by ID
-router.get('/:id', authenticateToken, async (req, res) => {
+ router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM roles WHERE id = $1', [req.params.id]);
         if (result.rows.length > 0) res.json(result.rows[0]);
@@ -46,7 +46,7 @@ router.post('/', authenticateToken, async (req, res) => {
             return res.status(409).json({ error: 'Role name already exists' });
         }
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
-    }
+    }  
 });
 
 // Update role
