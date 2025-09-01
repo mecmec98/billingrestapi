@@ -5,7 +5,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const { pool } = require('../db.js');
 
 // Middleware to check if the request is authenticated
-const authenticateToken = require('../middleware/auth.js');
+const authenticateToken = require('../middleware/auth.js').authenticateToken;
 //dummy authentication middleware use for testing purposes
 // const authenticateToken = (req, res, next) => next();
 
@@ -24,14 +24,13 @@ router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM application_list WHERE id = $1', [req.params.id]);
         if (result.rows.length > 0) res.json(result.rows[0]);
-        else res.status(404).json({ error: 'Application list not found' });
+        else res.status(404).json({ error: 'Application not found' });
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
 //Create new application list
-
 router.post('/', authenticateToken, async (req, res) => {
     const { application_number,
         applicant_name = '',
@@ -102,7 +101,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
             [application_number, applicant_name, house_num, street, purok, barangay, city, province, contact_info, status, by_user, req.params.id]
         );
         if (result.rows.length > 0) res.json(result.rows[0]);
-        else res.status(404).json({ error: 'Application list not found' });
+        else res.status(404).json({ error: 'Application not found' });
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
@@ -113,11 +112,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const
             result = await pool.query('DELETE FROM application_list WHERE id = $1 RETURNING *', [req.params.id]);
-        if (result.rows.length > 0) res.json({ message: 'Application list deleted successfully' });
-        else res.status(404).json({ error: 'Application list not found' });
+        if (result.rows.length > 0) res.json({ message: 'Application deleted successfully' });
+        else res.status(404).json({ error: 'Application not found' });
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
-
+ 
 module.exports = router;

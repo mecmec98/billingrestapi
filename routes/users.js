@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'defaultsecretkey';
 
 // Middleware to check if the request is authenticated
-const authenticateToken = require('../middleware/auth.js');
+const authenticateToken = require('../middleware/auth.js').authenticateToken;
 //dummy authentication middleware use for testing purposes
 //const authenticateToken = (req, res, next) => next();
 

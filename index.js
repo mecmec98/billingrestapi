@@ -30,6 +30,14 @@ app.use('/sv_transactions', sv_transactionRouter);
 const barangay = require('./routes/barangay.js');
 app.use('/barangay', barangay);
 
+const rolesRouter = require('./routes/roles.js');
+app.use('/roles', rolesRouter);
+
+const meter_clusterRouter = require('./routes/meter_cluster.js');
+app.use('/meter_cluster', meter_clusterRouter);
+
+const application_listRouter = require('./routes/application_list.js');
+app.use('/application_list', application_listRouter);
 
 const migrate = require('./migrationscript/fbtops.js');
 app.use('/testmigrate', migrate);

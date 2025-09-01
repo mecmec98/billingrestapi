@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const isProd = process.env.NODE_ENV === 'production';
 const { pool } = require('../db.js');
-const authenticateToken = require('../middleware/auth.js');
+const authenticateToken = require('../middleware/auth.js').authenticateToken;
 
 // Get all roles
 router.get('/', authenticateToken, async (req, res) => {
