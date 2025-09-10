@@ -32,14 +32,14 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 //POST create new receipt
 router.post('/', authenticateToken, async (req, res) => {
-    const {id,or_number,machine_sn,items,to_customer,by_users,total_amount} = req.body;
-    if (!id || !or_number || !machine_sn || !items || !to_customer || !by_users || !total) {
+    const {or_number,machine_sn,items,to_customer,by_user,total_amount} = req.body;
+    if (!or_number || !machine_sn || !items || !to_customer || !by_user || !total_amount) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
     try {
         const result = await pool.query(
-            'INSERT INTO receipts (id, or_number, machine_sn, items, to_customer, by_users, total_amount) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [id, or_number, machine_sn, items, to_customer, by_users, total]
+            'INSERT INTO receipts ( or_number, machine_sn, items, to_customer, by_user, total_amount) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [or_number, machine_sn, items, to_customer, by_user, total_amount]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -50,14 +50,14 @@ router.post('/', authenticateToken, async (req, res) => {
 //PUT update receipt
 
 router.put('/:id', authenticateToken, async (req, res) => {
-    const {id,or_number,machine_sn,items,to_customer,by_users,total} = req.body;
-    if (!id || !or_number || !machine_sn || !items || !to_customer || !by_users || !total) {
+    const {or_number,machine_sn,items,to_customer,by_user,total_amount} = req.body;
+    if (!or_number || !machine_sn || !items || !to_customer || !by_user || !total_amount) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
     try {
         const result = await pool.query(
-            'UPDATE receipts SET or_number = $2, machine_sn = $3, items = $4, to_customer = $5, by_users = $6, total_amount = $7 WHERE id = $1 RETURNING *',
-            [id, or_number, machine_sn, items, to_customer, by_users, total_amount]
+            'UPDATE receipts SET or_number = $2, machine_sn = $3, items = $4, to_customer = $5, by_user = $6, total_amount = $7 WHERE id = $1 RETURNING *',
+            [req.params.id, or_number, machine_sn, items, to_customer, by_user, total_amount]
         );
         res.json(result.rows[0]);
     } catch (err) {
