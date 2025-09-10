@@ -18,6 +18,39 @@ router.get('/', authenticateToken, async (req, res) => {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
+//Get latest application number
+router.get('/latest', authenticateToken, async (req, res) => {
+    try {
+        const currentYear = new Date().getFullYear();
+        
+        // Get the highest suffix for the current year
+        const lastApplicationQuery = await pool.query(
+            `SELECT application_number FROM application_list 
+             WHERE application_number LIKE $1 
+             ORDER BY CAST(SUBSTRING(application_number FROM '\\d+-(.*)') AS INTEGER) DESC 
+             LIMIT 1`,
+            [`${currentYear}-%`]
+        );
+
+        let nextSuffix = 1;
+        if (lastApplicationQuery.rows.length > 0) {
+            const lastNumber = lastApplicationQuery.rows[0].application_number;
+            const lastSuffix = parseInt(lastNumber.split('-')[1]);
+            nextSuffix = lastSuffix + 1;
+        }
+
+        const nextApplicationNumber = `${currentYear}-${nextSuffix}`;
+
+        res.status(200).json({ 
+            next_application_number: nextApplicationNumber,
+            current_year: currentYear,
+            next_suffix: nextSuffix
+        });
+    } catch (err) {
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+    }
+});
+
 
 //Get application list by id
 router.get('/:id', authenticateToken, async (req, res) => {
@@ -32,7 +65,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 //Create new application list
 router.post('/', authenticateToken, async (req, res) => {
-    const { application_number,
+    const { 
         applicant_name = '',
         house_num = '',
         street = '',
@@ -42,8 +75,10 @@ router.post('/', authenticateToken, async (req, res) => {
         province = '',
         contact_info = '',
         status = 0,
-        by_user = '' } = req.body;
-  if (!applicant_name || typeof applicant_name !== 'string'
+        by_user = 1 
+    } = req.body;
+
+    if (!applicant_name || typeof applicant_name !== 'string'
         || typeof house_num !== 'string'
         || typeof street !== 'string'
         || typeof purok !== 'string'
@@ -54,13 +89,37 @@ router.post('/', authenticateToken, async (req, res) => {
         || !by_user) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
+
     try {
+        // Generate application number
+        const currentYear = new Date().getFullYear();
+        
+        // Get the highest suffix for the current year
+        const lastApplicationQuery = await pool.query(
+            `SELECT application_number FROM application_list 
+             WHERE application_number LIKE $1 
+             ORDER BY CAST(SUBSTRING(application_number FROM '\\d+-(.*)') AS INTEGER) DESC 
+             LIMIT 1`,
+            [`${currentYear}-%`]
+        );
+
+        let nextSuffix = 1;
+        if (lastApplicationQuery.rows.length > 0) {
+            const lastNumber = lastApplicationQuery.rows[0].application_number;
+            const lastSuffix = parseInt(lastNumber.split('-')[1]);
+            nextSuffix = lastSuffix + 1;
+        }
+
+        const application_number = `${currentYear}-${nextSuffix}`;
+
+        // Insert the new application
         const result = await pool.query(
             `INSERT INTO application_list 
             (application_number, applicant_name, house_num, street, purok, barangay, city, province, contact_info, status, by_user) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
             [application_number, applicant_name, house_num, street, purok, barangay, city, province, contact_info, status, by_user]
         );
+
         res.status(201).json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });

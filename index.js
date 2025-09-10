@@ -39,6 +39,9 @@ app.use('/meter_cluster', meter_clusterRouter);
 const application_listRouter = require('./routes/application_list.js');
 app.use('/application_list', application_listRouter);
 
+const receiptsRouter = require('./routes/receipts.js');
+app.use('/receipts', receiptsRouter);
+
 const migrate = require('./migrationscript/fbtops.js');
 app.use('/testmigrate', migrate);
 
