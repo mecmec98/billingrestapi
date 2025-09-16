@@ -42,7 +42,7 @@ router.post('/', authenticateToken, async (req, res) => {
             [or_number, machine_sn, items, to_customer, by_user, total_amount]
         );
         res.json(result.rows[0]);
-    } catch (err) {
+    } catch (err) { 
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });

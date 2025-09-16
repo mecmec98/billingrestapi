@@ -42,6 +42,9 @@ app.use('/application_list', application_listRouter);
 const receiptsRouter = require('./routes/receipts.js');
 app.use('/receipts', receiptsRouter);
 
+const pos_machineRouter = require('./routes/pos_machine.js');
+app.use('/pos_machine', pos_machineRouter);
+
 const migrate = require('./migrationscript/fbtops.js');
 app.use('/testmigrate', migrate);
 
