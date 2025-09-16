@@ -32,32 +32,31 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 //POST create new receipt
 router.post('/', authenticateToken, async (req, res) => {
-    const {or_number,machine_sn,items,to_customer,by_user,total_amount} = req.body;
-    if (!or_number || !machine_sn || !items || !to_customer || !by_user || !total_amount) {
+    const { or_number, machine_sn, items, to_customer, by_user, total_amount, payment_mode, or_status, series_batch } = req.body;
+    if (!or_number || !machine_sn || !items || !to_customer || !by_user || !total_amount || !payment_mode || !or_status || !series_batch) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
     try {
         const result = await pool.query(
-            'INSERT INTO receipts ( or_number, machine_sn, items, to_customer, by_user, total_amount) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [or_number, machine_sn, items, to_customer, by_user, total_amount]
+            'INSERT INTO receipts ( or_number, machine_sn, items, to_customer, by_user, total_amount, payment_mode, or_status, series_batch) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+            [or_number, machine_sn, items, to_customer, by_user, total_amount, payment_mode, or_status, series_batch]
         );
         res.json(result.rows[0]);
-    } catch (err) { 
+    } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
 
 //PUT update receipt
-
 router.put('/:id', authenticateToken, async (req, res) => {
-    const {or_number,machine_sn,items,to_customer,by_user,total_amount} = req.body;
-    if (!or_number || !machine_sn || !items || !to_customer || !by_user || !total_amount) {
+    const {items, to_customer, by_user, total_amount, payment_mode, or_status} = req.body;
+    if (!items || !to_customer || !by_user || !total_amount || !payment_mode || !or_status) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
     try {
         const result = await pool.query(
-            'UPDATE receipts SET or_number = $2, machine_sn = $3, items = $4, to_customer = $5, by_user = $6, total_amount = $7 WHERE id = $1 RETURNING *',
-            [req.params.id, or_number, machine_sn, items, to_customer, by_user, total_amount]
+            'UPDATE receipts SET items = $2, to_customer = $3, by_user = $4, total_amount = $5, payment_mode = $6, or_status = $7 WHERE id = $1 RETURNING *',
+            [req.params.id, items, to_customer, by_user, total_amount, payment_mode, or_status]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -67,7 +66,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
 //DELETE receipt
 router.delete('/:id', authenticateToken, async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     if (!id) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
