@@ -83,4 +83,156 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+
+// Endpoint to remit receipts by machine (update status from 1 to 2)
+router.post('/api/receipts/remit', async (req, res) => {
+    const { machine_sn } = req.body;
+
+    // Validate required fields
+    if (!machine_sn) {
+        return res.status(400).json({
+            success: false,
+            message: 'machine_sn is required'
+        });
+    }
+
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        // Get the latest remit_batch from all machines
+        const batchQuery = `
+            SELECT COALESCE(MAX(remit_batch), 0) as max_remit_batch 
+            FROM receipts 
+            WHERE status = 2
+        `;
+        const batchResult = await client.query(batchQuery);
+        const nextRemitBatch = batchResult.rows[0].max_remit_batch + 1;
+
+        // Check if there are any receipts to remit for this machine
+        const checkQuery = `
+            SELECT COUNT(*) as count 
+            FROM receipts 
+            WHERE machine_sn = $1 AND status = 1
+        `;
+        const checkResult = await client.query(checkQuery, [machine_sn]);
+
+        if (checkResult.rows[0].count == 0) {
+            await client.query('ROLLBACK');
+            return res.json({
+                success: false,
+                message: `No receipts found to remit for machine ${machine_sn}`
+            });
+        }
+
+        // Update receipts with status = 1 for the specific machine
+        const updateQuery = `
+            UPDATE receipts 
+            SET 
+                status = 2,
+                remit_batch = $1,
+                date_remitted = NOW()
+            WHERE machine_sn = $2 AND status = 1
+            RETURNING id, or_number, batch_prefix, total_amount, machine_sn
+        `;
+
+        const result = await client.query(updateQuery, [nextRemitBatch, machine_sn]);
+
+        // Calculate total amount remitted
+        const totalAmount = result.rows.reduce((sum, row) => sum + parseFloat(row.total_amount), 0);
+
+        await client.query('COMMIT');
+
+        res.json({
+            success: true,
+            message: `Successfully remitted ${result.rows.length} receipts for machine ${machine_sn}`,
+            machine_sn: machine_sn,
+            remittedReceipts: result.rows.length,
+            remitBatch: nextRemitBatch,
+            totalAmount: totalAmount.toFixed(2),
+            updatedReceipts: result.rows
+        });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error remitting receipts:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to remit receipts',
+            error: error.message
+        });
+    } finally {
+        client.release();
+    }
+});
+
+router.get('/api/receipts/remit-summary/:machine_sn', async (req, res) => {
+    const { machine_sn } = req.params;
+    
+    try {
+        const query = `
+            SELECT 
+                machine_sn,
+                remit_batch,
+                COUNT(*) as receipt_count,
+                SUM(total_amount) as total_amount,
+                MIN(date_updated) as remit_date
+            FROM receipts 
+            WHERE machine_sn = $1 AND status = 2 AND remit_batch IS NOT NULL
+            GROUP BY machine_sn, remit_batch
+            ORDER BY remit_batch DESC
+        `;
+        
+        const result = await pool.query(query, [machine_sn]);
+        
+        res.json({
+            success: true,
+            machine_sn: machine_sn,
+            remitHistory: result.rows
+        });
+        
+    } catch (error) {
+        console.error('Error fetching remit summary:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch remit summary',
+            error: error.message
+        });
+    }
+});
+
+router.get('/api/receipts/remit-summary', async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                machine_sn,
+                remit_batch,
+                COUNT(*) as receipt_count,
+                SUM(total_amount) as total_amount,
+                MIN(date_updated) as remit_date
+            FROM receipts 
+            WHERE status = 2 AND remit_batch IS NOT NULL
+            GROUP BY machine_sn, remit_batch
+            ORDER BY machine_sn, remit_batch DESC
+        `;
+        
+        const result = await pool.query(query);
+        
+        res.json({
+            success: true,
+            remitHistory: result.rows
+        });
+        
+    } catch (error) {
+        console.error('Error fetching remit summary:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch remit summary',
+            error: error.message
+        });
+    }
+});
+
+
 module.exports = router;
