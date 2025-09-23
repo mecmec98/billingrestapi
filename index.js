@@ -45,8 +45,17 @@ app.use('/receipts', receiptsRouter);
 const pos_machineRouter = require('./routes/pos_machine.js');
 app.use('/pos_machine', pos_machineRouter);
 
+const inspectionRouter = require('./routes/inspection.js');
+app.use('/inspection', inspectionRouter);
+
+
+
+
+//for migration
 const migrate = require('./migrationscript/fbtops.js');
 app.use('/testmigrate', migrate);
+
+
 
 
 app.listen(port, () => {
