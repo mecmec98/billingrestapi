@@ -50,17 +50,19 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 //PUT update pos_machine
-router.post('/', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     const { pos_name, serial_num, model } = req.body;
 
     if (!pos_name || !serial_num || !model) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
     try {
-        const results = await pool.query(
+        const result = await pool.query(
             'UPDATE pos_machine SET pos_name = $2, serial_num = $3, model = $4 WHERE id = $1 RETURNING *',
             [req.params.id, pos_name, serial_num, model]
         );
+        if (result.rows.length > 0) res.json(result.rows[0]);
+        else res.status(404).json({ error: 'POS Machine not found' });
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal Server error' : err.message });
     }

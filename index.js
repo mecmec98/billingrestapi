@@ -8,7 +8,7 @@ const port = 3002;
 
 app.use(express.json());
 
-
+//all routes
 const userRouter = require('./routes/users.js');
 app.use('/users', userRouter);
 
@@ -48,8 +48,8 @@ app.use('/pos_machine', pos_machineRouter);
 const inspectionRouter = require('./routes/inspection.js');
 app.use('/inspection', inspectionRouter);
 
-
-
+const discountRouter = require('./routes/discounts.js');
+app.use('/discounts', discountRouter);
 
 //for migration
 const migrate = require('./migrationscript/fbtops.js');
