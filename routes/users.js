@@ -70,18 +70,18 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 // POST create new user
 router.post('/', authenticateToken, async (req, res) => {
-  const { username, password, role, fullname } = req.body;
+  const { username, password, role_id, fullname } = req.body;
   if (!username || typeof username !== 'string' || username.trim() === ''
     || !password || typeof password !== 'string' || password.trim() === ''
-    || !role || typeof role !== 'number'
+    || role_id == undefined || typeof role_id !== 'number'
     || !fullname || typeof fullname !== 'string') {
     return res.status(400).json({ error: 'Invalid or missing name' });
   }
   try {
     const hashedPassword = await bcrypt.hash(password.trim(), SALT_ROUNDS);
     const result = await pool.query(
-      'INSERT INTO users (username,password,role,fullname) VALUES ($1,$2,$3,$4) RETURNING *',
-      [username.trim(), hashedPassword, role, fullname]
+      'INSERT INTO users (username,password,role_id,fullname) VALUES ($1,$2,$3,$4) RETURNING *',
+      [username.trim(), hashedPassword, role_id, fullname]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -131,11 +131,11 @@ router.put('/password/:id', authenticateToken, async (req, res) => {
 
 // PUT update user_type
 router.put('/role/:id', authenticateToken, async (req, res) => {
-  const { role } = req.body;
+  const { role_id } = req.body;
   try {
     const result = await pool.query(
-      'UPDATE users SET role = $1 WHERE id = $2 RETURNING *',
-      [role, req.params.id]
+      'UPDATE users SET role_id = $1 WHERE id = $2 RETURNING *',
+      [role_id, req.params.id]
     );
     if (result.rows.length > 0) res.json(result.rows[0]);
     else res.status(404).json({ error: 'User not found' });
