@@ -51,6 +51,9 @@ app.use('/inspection', inspectionRouter);
 const discountRouter = require('./routes/discounts.js');
 app.use('/discounts', discountRouter);
 
+const zone_bookRouter = require('./routes/zone_book.js');
+app.use('/zone_book', zone_bookRouter);
+
 //for migration
 const migrate = require('./migrationscript/fbtops.js');
 app.use('/testmigrate', migrate);
