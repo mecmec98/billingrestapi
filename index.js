@@ -36,6 +36,9 @@ app.use('/roles', rolesRouter);
 const meter_clusterRouter = require('./routes/meter_cluster.js');
 app.use('/meter_cluster', meter_clusterRouter);
 
+const discountpenaltyRouter = require('./routes/discounts.js');
+app.use('/discountpenalty', discountpenaltyRouter);
+
 const application_listRouter = require('./routes/application_list.js');
 app.use('/application_list', application_listRouter);
 
@@ -48,8 +51,6 @@ app.use('/pos_machine', pos_machineRouter);
 const inspectionRouter = require('./routes/inspection.js');
 app.use('/inspection', inspectionRouter);
 
-const discountRouter = require('./routes/discounts.js');
-app.use('/discounts', discountRouter);
 
 const zone_bookRouter = require('./routes/zone_book.js');
 app.use('/zone_book', zone_bookRouter);
