@@ -38,11 +38,11 @@ router.get('/number/:cluster_number', authenticateToken, async (req, res) => {
 
 // Create new cluster
 router.post('/', authenticateToken, async (req, res) => {
-    const { 
-        cluster_number, 
-        cluster_location, 
-        cluster_coordinates, 
-        meter_list = [] 
+    const {
+        cluster_number,
+        cluster_location,
+        cluster_coordinates,
+        meter_list = []
     } = req.body;
 
     if (!cluster_number || typeof cluster_number !== 'string'
@@ -54,8 +54,8 @@ router.post('/', authenticateToken, async (req, res) => {
         const result = await pool.query(
             'INSERT INTO meter_cluster (cluster_number, cluster_location, cluster_coordinates, meter_list, date_created, date_updated) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *',
             [
-                cluster_number, 
-                cluster_location, 
+                cluster_number,
+                cluster_location,
                 cluster_coordinates ? JSON.stringify(cluster_coordinates) : null,
                 JSON.stringify(meter_list)
             ]
@@ -71,11 +71,11 @@ router.post('/', authenticateToken, async (req, res) => {
 
 // Update cluster
 router.put('/:id', authenticateToken, async (req, res) => {
-    const { 
-        cluster_number, 
-        cluster_location, 
-        cluster_coordinates, 
-        meter_list 
+    const {
+        cluster_number,
+        cluster_location,
+        cluster_coordinates,
+        meter_list
     } = req.body;
 
     if (!cluster_number || typeof cluster_number !== 'string'
@@ -87,8 +87,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
         const result = await pool.query(
             'UPDATE meter_cluster SET cluster_number = $1, cluster_location = $2, cluster_coordinates = $3, meter_list = $4, date_updated = CURRENT_TIMESTAMP WHERE id = $5 RETURNING *',
             [
-                cluster_number, 
-                cluster_location, 
+                cluster_number,
+                cluster_location,
                 cluster_coordinates ? JSON.stringify(cluster_coordinates) : null,
                 JSON.stringify(meter_list),
                 req.params.id

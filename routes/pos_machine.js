@@ -68,19 +68,29 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-//DELETE pos_machine
+// DELETE pos_machine
 router.delete('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     if (!id) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
     try {
-        const result = await pool.query('DELTE FROM pos_machine WHERE id = $1', [id]);
-        res.json(result.rows[0]);
+        const result = await pool.query(
+            'DELETE FROM pos_machine WHERE id = $1 RETURNING *',
+            [id]
+        );
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'pos_machine not found' });
+        }
+        res.json({
+            success: true,
+            message: 'pos_machine deleted successfully',
+            deleted: result.rows[0]
+        });
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
-})
+});
 
 //SELECT current series
 router.get('/peek/:serial_num', authenticateToken, async (req, res) => {
