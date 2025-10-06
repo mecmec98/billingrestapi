@@ -143,7 +143,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
     if (!applicant_name || typeof applicant_name !== 'string'
         || typeof house_num !== 'string'
         || typeof street !== 'string'
-
         || typeof purok !== 'string'
         || typeof barangay !== 'string'
         || typeof city !== 'string'
@@ -161,6 +160,30 @@ router.put('/:id', authenticateToken, async (req, res) => {
         );
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Application not found' });
+    } catch (err) {
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+    }
+});
+
+// Update application status only
+router.patch('/:id/status', authenticateToken, async (req, res) => {
+    const { status, by_user = 1 } = req.body; // Default to 1
+    
+    if (status === undefined) {
+        return res.status(400).json({ error: 'Status is required' });
+    }
+    try {
+        const result = await pool.query(
+            `UPDATE application_list SET status = $1, by_user = $2
+            WHERE id = $3 RETURNING *`,
+            [status, by_user, req.params.id]
+        );
+        
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]);
+        } else {
+            res.status(404).json({ error: 'Application not found' });
+        }
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
