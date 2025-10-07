@@ -41,7 +41,7 @@ router.post('/login', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '12h' } // Token expires in 12 hour
     );
-    return res.json({ success: true, message: 'Login successful', user: { id: user.id, username: user.username }, token });
+    return res.json({ success: true, message: 'Login successful', user: { id: user.id, username: user.username, fullname: user.fullname, role_id: user.role_id}, token });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }

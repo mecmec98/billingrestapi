@@ -19,6 +19,33 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
+// Search consumer by account number
+router.get('/search', authenticateToken, async (req, res) => {
+    try {
+        const { account_number } = req.query;
+
+        // Validate input
+        if (!account_number || account_number.trim() === '') {
+            return res.status(400).json({ error: 'account_number query parameter is required' });
+        }
+
+        const result = await pool.query(
+            'SELECT * FROM consumer WHERE account_number = $1 LIMIT 1',
+            [account_number.trim()]
+        );
+
+        if (result.rows.length > 0) {
+            
+            res.json(result.rows[0]);
+        } else {
+            res.status(404).json({ error: 'Consumer not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+    }
+});
+
+
 // Get consumer by ID
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
@@ -80,6 +107,7 @@ router.post('/', authenticateToken, async (req, res) => {
             'INSERT INTO consumer (fullname, address, ratetype, metercode, meternumber, senior, seniorstart, seniorexpiry, status, date_connected, date_disconnected, date_reconnected, account_number, zone, book, rate_class, metersize, account_suffix, created_by_userid, date_created) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, CURRENT_DATE) RETURNING *',
             [fullname, address, ratetype, metercode, meternumber, senior, seniorstart, seniorexpiry, status, date_connected, date_disconnected, date_reconnected, account_number, zone, book, rate_class, metersize, account_suffix, created_by_userid]
         );
+        
         res.status(201).json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });

@@ -10,7 +10,17 @@ const authenticateToken = require('../middleware/auth.js').authenticateToken;
 // const authenticateToken = (req, res, next) => next();
 
 
-// Get all pos_machines
+// Public Get all pos_machines
+router.get('/public', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id, pos_name, serial_num, model FROM pos_machine');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+    }
+});
+
+//Get all pos_machines
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM pos_machine');
@@ -30,6 +40,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ erro: isProd ? 'Internal server error' : err.message });
     }
 });
+
 
 // POST create new pos_machine
 router.post('/', authenticateToken, async (req, res) => {

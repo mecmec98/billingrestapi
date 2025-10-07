@@ -32,18 +32,19 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 //POST create new receipt
 router.post('/', authenticateToken, async (req, res) => {
-    const { or_number, machine_sn, items, to_customer, by_user, total_amount, payment_mode, or_status, series_batch } = req.body;
+    const { or_number, machine_sn, items, to_customer, by_user, total_amount, payment_mode, or_status, series_batch, transaction_description } = req.body;
 
     const itemsJson = typeof items === 'string' ? items : JSON.stringify(items);
 
-    if (!or_number || !machine_sn || !itemsJson || !to_customer || !by_user || !total_amount || !payment_mode || !or_status || !series_batch) {
+    if (!or_number || !machine_sn || !itemsJson || !to_customer || !by_user || !total_amount || !payment_mode || !or_status || !series_batch || !transaction_description) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
     try {
         const result = await pool.query(
-            'INSERT INTO receipts ( or_number, machine_sn, items, to_customer, by_user, total_amount, payment_mode, or_status, series_batch) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-            [or_number, machine_sn, itemsJson, to_customer, by_user, total_amount, payment_mode, or_status, series_batch]
+            'INSERT INTO receipts ( or_number, machine_sn, items, to_customer, by_user, total_amount, payment_mode, or_status, series_batch, transaction_description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+            [or_number, machine_sn, itemsJson, to_customer, by_user, total_amount, payment_mode, or_status, series_batch, transaction_description]
         );
+        result.rows[0].total_amount = parseFloat(result.rows[0].total_amount);
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
@@ -52,17 +53,18 @@ router.post('/', authenticateToken, async (req, res) => {
 
 //PUT update receipt
 router.put('/:id', authenticateToken, async (req, res) => {
-    const { items, to_customer, by_user, total_amount, payment_mode, or_status } = req.body;
+    const { items, to_customer, by_user, total_amount, payment_mode, or_status, transaction_description } = req.body;
     const itemsJson = typeof items === 'string' ? items : JSON.stringify(items);
 
-    if (!itemsJson || !to_customer || !by_user || !total_amount || !payment_mode || !or_status) {
+    if (!itemsJson || !to_customer || !by_user || !total_amount || !payment_mode || !or_status || !transaction_description) {
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
     try {
         const result = await pool.query(
-            'UPDATE receipts SET items = $2, to_customer = $3, by_user = $4, total_amount = $5, payment_mode = $6, or_status = $7 WHERE id = $1 RETURNING *',
-            [req.params.id, itemsJson, to_customer, by_user, total_amount, payment_mode, or_status]
+            'UPDATE receipts SET items = $2, to_customer = $3, by_user = $4, total_amount = $5, payment_mode = $6, or_status = $7, transaction_description = $8 WHERE id = $1 RETURNING *',
+            [req.params.id, itemsJson, to_customer, by_user, total_amount, payment_mode, or_status, transaction_description]
         );
+        result.rows[0].total_amount = parseFloat(result.rows[0].total_amount);
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
@@ -167,9 +169,10 @@ router.post('/api/receipts/remit', async (req, res) => {
     }
 });
 
+//remitted summary by machine
 router.get('/api/receipts/remit-summary/:machine_sn', async (req, res) => {
     const { machine_sn } = req.params;
-    
+
     try {
         const query = `
             SELECT 
@@ -183,15 +186,15 @@ router.get('/api/receipts/remit-summary/:machine_sn', async (req, res) => {
             GROUP BY machine_sn, remit_batch
             ORDER BY remit_batch DESC
         `;
-        
+
         const result = await pool.query(query, [machine_sn]);
-        
+
         res.json({
             success: true,
             machine_sn: machine_sn,
             remitHistory: result.rows
         });
-        
+
     } catch (error) {
         console.error('Error fetching remit summary:', error);
         res.status(500).json({
@@ -202,6 +205,7 @@ router.get('/api/receipts/remit-summary/:machine_sn', async (req, res) => {
     }
 });
 
+//all remited summary
 router.get('/api/receipts/remit-summary', async (req, res) => {
     try {
         const query = `
@@ -216,14 +220,14 @@ router.get('/api/receipts/remit-summary', async (req, res) => {
             GROUP BY machine_sn, remit_batch
             ORDER BY machine_sn, remit_batch DESC
         `;
-        
+
         const result = await pool.query(query);
-        
+
         res.json({
             success: true,
             remitHistory: result.rows
         });
-        
+
     } catch (error) {
         console.error('Error fetching remit summary:', error);
         res.status(500).json({
