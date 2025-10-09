@@ -60,6 +60,8 @@ const migrate = require('./migrationscript/fbtops.js');
 app.use('/testmigrate', migrate);
 
 
+const balance_old_tableRouter = require('./routes/balance_old_table.js');
+app.use('/balance_old_table', balance_old_tableRouter);
 
 
 app.listen(port, () => {
