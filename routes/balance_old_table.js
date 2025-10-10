@@ -95,18 +95,23 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 //Get by mascode
 router.get('/mascode/:mascode', authenticateToken, async (req, res) => {
     const { mascode } = req.params;
-    if (!mascode) {
-        return res.status(400).json({ error: 'Invalid or missing fields' });
+
+    // Validate mascode is a number
+    if (!mascode || isNaN(mascode)) {
+        return res.status(400).json({ error: 'Invalid mascode parameter' });
     }
     try {
         const result = await pool.query(
             'SELECT * FROM balance_old_table WHERE mascode = $1',
             [mascode]
         );
-        if (result.rows.length > 0) res.json(result.rows);
-        else res.status(404).json({ error: 'Balance not found' });
+        // Always return an array (empty if no results)
+        res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+        console.error('Error fetching old balance:', err);
+        res.status(500).json({
+            error: isProd ? 'Internal server error' : err.message
+        });
     }
 });
 
