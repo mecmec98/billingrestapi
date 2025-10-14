@@ -12,7 +12,7 @@ const authenticateToken = require('../middleware/auth.js').authenticateToken;
 // GET all wb_transactions
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM wb_transactions');
+        const result = await pool.query('SELECT * FROM wb_ledger');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
@@ -22,8 +22,8 @@ router.get('/', authenticateToken, async (req, res) => {
 // GET wb_transaction by consumerid
 router.get('/consumer/:consumerid', authenticateToken, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM wb_transactions WHERE consumerid = $1', [req.params.consumerid]);
-        if (result.rows.length > 0) res.json(result.rows[0]);
+        const result = await pool.query('SELECT * FROM wb_ledger WHERE consumer_id = $1', [req.params.consumerid]);
+         if (result.rows.length > 0) res.json(result.rows); 
         else res.status(404).json({ error: 'Transaction not found' });
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
@@ -32,23 +32,27 @@ router.get('/consumer/:consumerid', authenticateToken, async (req, res) => {
 
 // POST create new wb_transaction
 router.post('/', authenticateToken, async (req, res) => {
-    const { consumerid, prevreading, curreading, value, status, dateposted, datedue } = req.body;
+    const { consumerid, ref_no, reading_date, date_entered, particulars, reading, wbusage, debit, credit, balance, by_user, status, amount } = req.body;
 
-    if (!consumerid || typeof consumerid !== 'number'
-        || !prevreading || typeof prevreading !== 'number'
-        || !curreading || typeof curreading !== 'number'
-        || !value || typeof value !== 'number'
-        || !status || typeof status !== 'number'
-        || !dateposted || isNaN(Date.parse(dateposted))
-        || !datedue || isNaN(Date.parse(datedue))) {
+    if (consumerid === undefined
+        || ref_no === undefined
+        || !particulars
+        || reading === undefined
+        || wbusage === undefined
+        || debit === undefined
+        || credit === undefined
+        || balance === undefined
+        || !by_user
+        || status === undefined
+        || amount === undefined || amount === null) {
 
         return res.status(400).json({ error: 'Invalid or missing fields' });
     }
 
     try {
         const result = await pool.query(
-            'INSERT INTO wb_transactions (consumer_id, prevreading, curreading, value, status, dateposted, datedue) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [consumerid, prevreading, curreading, value, status, dateposted, datedue]
+            'INSERT INTO wb_ledger (consumer_id, ref_no, reading_date, date_entered, particulars, reading, wbusage, debit, credit, balance, by_user, status, amount) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *',
+            [consumerid, ref_no, reading_date, date_entered, particulars, reading, wbusage, debit, credit, balance, by_user, status, amount]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -68,8 +72,8 @@ router.put('/payment/:id', authenticateToken, async (req, res) => {
 
     try {
         const result = await pool.query(
-            'UPDATE wb_transactions SET status = $1, datepaid = $2, or_number = $3 WHERE id = $4 RETURNING *',
-            [status, datepaid, or_number, req.params.id]
+            'UPDATE wb_ledger SET status = $1, datepaid = $2, or_number = $3, amount = $4 WHERE id = $5 RETURNING *',
+            [status, datepaid, or_number, amount, req.params.id]
         );
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Transaction not found' });
@@ -95,7 +99,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     try {
         const result = await pool.query(
-            'UPDATE wb_transactions SET consumer_id = $1, prevreading = $2, curreading = $3, value = $4, status = $5, datepaid = $6, or_number = $7 WHERE id = $8 RETURNING *',
+            'UPDATE wb_ledger SET consumer_id = $1, prevreading = $2, curreading = $3, value = $4, status = $5, datepaid = $6, or_number = $7 WHERE id = $8 RETURNING *',
             [consumerid, prevreading, curreading, value, status, datepaid, or_number, req.params.id]
         );
         if (result.rows.length > 0) res.json(result.rows[0]);
@@ -108,7 +112,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 // DELETE wb_transaction
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
-        const result = await pool.query('DELETE FROM wb_transactions WHERE id = $1 RETURNING *', [req.params.id]);
+        const result = await pool.query('DELETE FROM wb_ledger WHERE id = $1 RETURNING *', [req.params.id]);
         if (result.rows.length > 0) res.json({ success: true, message: 'Transaction deleted successfully' });
         else res.status(404).json({ error: 'Transaction not found' });
     } catch (err) {

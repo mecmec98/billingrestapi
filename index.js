@@ -51,17 +51,20 @@ app.use('/pos_machine', pos_machineRouter);
 const inspectionRouter = require('./routes/inspection.js');
 app.use('/inspection', inspectionRouter);
 
-
 const zone_bookRouter = require('./routes/zone_book.js');
 app.use('/zone_book', zone_bookRouter);
+
+const balance_old_tableRouter = require('./routes/balance_old_table.js');
+app.use('/balance_old_table', balance_old_tableRouter);
+
+
 
 //for migration
 const migrate = require('./migrationscript/fbtops.js');
 app.use('/testmigrate', migrate);
 
 
-const balance_old_tableRouter = require('./routes/balance_old_table.js');
-app.use('/balance_old_table', balance_old_tableRouter);
+
 
 
 app.listen(port, () => {
