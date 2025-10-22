@@ -57,6 +57,12 @@ app.use('/zone_book', zone_bookRouter);
 const balance_old_tableRouter = require('./routes/balance_old_table.js');
 app.use('/balance_old_table', balance_old_tableRouter);
 
+const pay_listRouter = require('./routes/pay_list.js');
+app.use('/pay_list', pay_listRouter);
+
+const meter_readersRouter = require('./routes/meter_readers.js');
+app.use('/meter_readers', meter_readersRouter);
+
 
 
 //for migration
