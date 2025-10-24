@@ -25,22 +25,22 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'Missing username or password' });
     }
     try {
-        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        const result = await pool.query('SELECT * FROM meter_reader WHERE username = $1', [username]);
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        const user = result.rows[0];
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const mr = result.rows[0];
+        const passwordMatch = await bcrypt.compare(password, mr.password);
         if (!passwordMatch) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
         // On success, return user info and a JWT token
         const token = jwt.sign(
-            { id: user.id, username: user.username },
+            { id: mr.id, username: mr.username },
             JWT_SECRET,
             { expiresIn: '12h' } // Token expires in 12 hour
         );
-        return res.json({ success: true, message: 'Login successful', user: { id: user.id, username: user.username, fullname: user.fullname, role_id: user.role_id }, token });
+        return res.json({ success: true, message: 'Login successful', user: { id: mr.id, username: mr.username, mr_name: mr.mr_name }, token });
     } catch (err) {
         return res.status(500).json({ success: false, error: err.message });
     }
@@ -53,22 +53,22 @@ router.post('/login-pin', async (req, res) => {
         return res.status(400).json({ error: 'Missing username or password' });
     }
     try {
-        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        const result = await pool.query('SELECT * FROM meter_reader WHERE username = $1', [username]);
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        const user = result.rows[0];
-        const pinMatch = await bcrypt.compare(pin, user.pin);
+        const mr = result.rows[0];
+        const pinMatch = await bcrypt.compare(pin, mr.pin);
         if (!pinMatch) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
         // On success, return user info and a JWT token
         const token = jwt.sign(
-            { id: user.id, username: user.username },
+            { id: mr.id, username: mr.username },
             JWT_SECRET,
             { expiresIn: '12h' } // Token expires in 12 hour
         );
-        return res.json({ success: true, message: 'Login successful', user: { id: user.id, username: user.username, fullname: user.fullname, role_id: user.role_id }, token });
+        return res.json({ success: true, message: 'Login successful', user: { id: mr.id, username: mr.username, mr_name: mr.mr_name}, token });
     } catch (err) {
         return res.status(500).json({ success: false, error: err.message });
     }

@@ -63,6 +63,9 @@ app.use('/pay_list', pay_listRouter);
 const meter_readersRouter = require('./routes/meter_readers.js');
 app.use('/meter_readers', meter_readersRouter);
 
+const prefRouter = require('./routes/prefs.js');
+app.use('/prefs', prefRouter)
+
 
 
 //for migration

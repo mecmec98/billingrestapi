@@ -38,11 +38,11 @@ router.post('/', authenticateToken, async (req, res) => {
     if (code === undefined || typeof code !== 'number'
         || !type || typeof type !== 'string'
         || !metersize || typeof metersize !== 'string'
-        || !minimum || typeof minimum !== 'number'
-        || !rate1120 || typeof rate1120 !== 'number'
-        || !rate2130 || typeof rate2130 !== 'number'
-        || !rate3140 || typeof rate3140 !== 'number'
-        || !rate41up || typeof rate41up !== 'number'
+        || minimum  === undefined || typeof minimum !== 'number'
+        || rate1120  === undefined || typeof rate1120 !== 'number'
+        || rate2130  === undefined || typeof rate2130 !== 'number'
+        || rate3140  === undefined || typeof rate3140 !== 'number'
+        || rate41up  === undefined || typeof rate41up !== 'number'
         || !rate_name || typeof rate_name !== 'string') {
 
         return res.status(400).json({ error: 'Invalid input' });
