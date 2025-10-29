@@ -23,7 +23,7 @@ router.get('/', authenticateToken, async (req, res) => {
 //Create prefs
 router.post('/', authenticateToken, async (req, res) => {
     try {
-        const { key, value, uom, prefs } = req.body;
+        const { key, value, uom, remarks } = req.body;
 
         // Validate input
         if (!key || key.trim() === '') {
@@ -31,8 +31,8 @@ router.post('/', authenticateToken, async (req, res) => {
         }
 
         const result = await pool.query(
-            'INSERT INTO prefs (key, value) VALUES ($1, $2) RETURNING *',
-            [key.trim(), value]
+            'INSERT INTO prefs (key, value, uom, remarks) VALUES ($1, $2, $3, $4) RETURNING *',
+            [key.trim(), value, uom, remarks]
         );
 
         res.json(result.rows[0]);
@@ -69,7 +69,7 @@ router.get('/key', authenticateToken, async (req, res) => {
 });
 
 
-//Update prefs by key
+//Update prefs value only by key
 router.put('/key', authenticateToken, async (req, res) => {
     try {
         const { key } = req.query;

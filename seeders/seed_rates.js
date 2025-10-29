@@ -3,13 +3,13 @@ const { pool } = require('../db.js');
 
 async function seedRates() {
   const rates = [
-    [10, 'Residential', '1/2"', 252.00, 26.50, 28.20, 30.20, 32.90],
-    [10, 'Residential', '3/4"', 403.20, 26.50, 28.20, 30.20, 32.90],
-    [10, 'Residential', '1"', 806.40, 26.50, 28.20, 30.20, 32.90],
-    [10, 'Residential', '1 1/2"', 2016.00, 26.50, 28.20, 30.20, 32.90],
-    [10, 'Residential', '2"', 5040.00, 26.50, 28.20, 30.20, 32.90],
-    [10, 'Residential', '3"', 9072.00, 26.50, 28.20, 30.20, 32.90],
-    [10, 'Residential', '4"', 18144.00, 26.50, 28.20, 30.20, 32.90]
+    [102, 'Residential', '1/2"', 252.00, 26.50, 28.20, 30.20, 32.90],
+    [103, 'Residential', '3/4"', 403.20, 26.50, 28.20, 30.20, 32.90],
+    [104, 'Residential', '1"', 806.40, 26.50, 28.20, 30.20, 32.90],
+    [105, 'Residential', '1 1/2"', 2016.00, 26.50, 28.20, 30.20, 32.90],
+    [106, 'Residential', '2"', 5040.00, 26.50, 28.20, 30.20, 32.90],
+    [107, 'Residential', '3"', 9072.00, 26.50, 28.20, 30.20, 32.90],
+    [108, 'Residential', '4"', 18144.00, 26.50, 28.20, 30.20, 32.90]
   ];
 
   try {
@@ -20,16 +20,17 @@ async function seedRates() {
         'INSERT INTO rates (code, type, metersize, minimum, rate1120, rate2130, rate3140, rate41up) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
         rate
       );
-      console.log(`Inserted rate ${rate[0]}: ${rate[2]} - ₱${rate[3]}`);
+      console.log(`Seeded rate ${rate[0]}: ${rate[2]} - ₱${rate[3]}`);
       successCount++;
     }
 
-    console.log(`\nSuccessfully inserted ${successCount} residential rates!`);
+    console.log(`\nSuccessfully seeded ${successCount} residential rates!`);
   } catch (err) {
-    console.error('Error inserting rates:', err.message);
+    console.error('Error seeding rates:', err.message);
   } finally {
     await pool.end();
   }
 }
 
 seedRates(); 
+// To run this seeder, use the command: node seeders/seed_rates.js
