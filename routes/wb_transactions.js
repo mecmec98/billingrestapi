@@ -30,6 +30,7 @@ router.get('/consumer/:consumerid', authenticateToken, async (req, res) => {
     }
 });
 
+//status guide 0 = unpaid, 1 = paid, 2 = partially paid, 3 = overdue, 4 = discounted?
 // POST create new wb_transaction
 router.post('/', authenticateToken, async (req, res) => {
     const { consumerid, ref_no, reading_date, particulars, reading, wbusage, debit, credit, balance, by_user, status, amount } = req.body;
@@ -77,6 +78,25 @@ router.put('/payment/:id', authenticateToken, async (req, res) => {
         );
         if (result.rows.length > 0) res.json(result.rows[0]);
         else res.status(404).json({ error: 'Transaction not found' });
+    } catch (err) {
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+    }
+});
+
+//Get latest balance by account_num
+router.get('/balance/:account_num', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT balance FROM wb_ledger WHERE account_num = $1 ORDER BY id DESC LIMIT 1', 
+            [req.params.account_num]
+        );
+        
+        // Return single object instead of array if found
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]);
+        } else {
+            res.status(404).json({ error: 'No records found for this account' });
+        }
     } catch (err) {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }

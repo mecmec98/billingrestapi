@@ -27,6 +27,25 @@ router.get('/account/:account_num', authenticateToken, async (req, res) => {
     }
 });
 
+//Get latest balance by account_num
+router.get('/balance/:account_num', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT balance FROM consumer_pay_lst WHERE account_num = $1 ORDER BY id DESC LIMIT 1', 
+            [req.params.account_num]
+        );
+        
+        // Return single object instead of array if found
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]);
+        } else {
+            res.status(404).json({ error: 'No records found for this account' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+    }
+});
+
 //Change Status by paylist id
 router.put('/status/:id', authenticateToken, async (req, res) => {
     try {
