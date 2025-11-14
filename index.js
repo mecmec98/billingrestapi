@@ -18,8 +18,8 @@ app.use('/meters', meterRouter);
 const rateRouter = require('./routes/rates.js');
 app.use('/rates', rateRouter);
 
-const wb_transactionRouter = require('./routes/wb_transactions.js');
-app.use('/wb_transactions', wb_transactionRouter);
+const wb_ledgerRouter = require('./routes/wb_ledger.js');
+app.use('/wb_ledger', wb_ledgerRouter);
 
 const consumerRouter = require('./routes/consumer.js');
 app.use('/consumers', consumerRouter);
