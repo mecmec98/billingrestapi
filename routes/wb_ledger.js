@@ -61,7 +61,7 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
-// POST /wb_ledger/transaction for new transactions
+// POST /wb_ledger/transaction for new transaction s
 router.post('/transaction', authenticateToken, async (req, res) => {
     const {
         consumerid,
@@ -150,25 +150,28 @@ router.post('/transaction', authenticateToken, async (req, res) => {
     }
 });
 
-// PUT update wb_transaction on successful payment
-router.put('/payment/:id', authenticateToken, async (req, res) => {
-    const { status, datepaid, or_number } = req.body;
+// PUT update wb_transaction status
+router.put('/status/:id', authenticateToken, async (req, res) => {
+    const { status } = req.body;
 
-    if (!status || typeof status !== 'number'
-        || !datepaid || isNaN(Date.parse(datepaid))
-        || !or_number || typeof or_number !== 'string') {
-        return res.status(400).json({ error: 'Invalid or missing fields' });
+    if (!status || typeof status !== 'number') {
+        return res.status(400).json({ error: 'Status is required and must be a number' });
     }
-
     try {
         const result = await pool.query(
-            'UPDATE wb_ledger SET status = $1, datepaid = $2, or_number = $3, amount = $4 WHERE id = $5 RETURNING *',
-            [status, datepaid, or_number, amount, req.params.id]
+            'UPDATE wb_ledger SET status = $1 WHERE id = $2 RETURNING *',
+            [status, req.params.id]
         );
-        if (result.rows.length > 0) res.json(result.rows[0]);
-        else res.status(404).json({ error: 'Transaction not found' });
+
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]);
+        } else {
+            res.status(404).json({ error: 'Transaction not found' });
+        }
     } catch (err) {
-        res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
+        res.status(500).json({
+            error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+        });
     }
 });
 
@@ -190,6 +193,8 @@ router.get('/balance/:consumer_id', authenticateToken, async (req, res) => {
         res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
     }
 });
+
+//update ledger status
 
 // PUT update wb_transaction
 router.put('/:id', authenticateToken, async (req, res) => {
